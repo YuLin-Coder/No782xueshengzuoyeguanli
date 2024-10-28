@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.ZuoyeDao">
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        a.id as id
+        ,a.banji_kecheng_laoshi_id as banjiKechengLaoshiId
+        ,a.zuoye_name as zuoyeName
+        ,a.zuoye_file as zuoyeFile
+        ,a.zuoye_content as zuoyeContent
+        ,a.insert_time as insertTime
+        ,a.end_time as endTime
+        ,a.create_time as createTime
+    </sql>
+    <select id="selectListView" parameterType="map" resultType="com.entity.view.ZuoyeView" >
+        SELECT
+        <include refid="Base_Column_List" />
+
+--         级联表的字段
+        ,banjiKechengLaoshi.banji_id as banjiId
+        ,banjiKechengLaoshi.kecheng_id as kechengId
+        ,banjiKechengLaoshi.laoshi_id as laoshiId
+        ,banjiKechengLaoshi.beizhu_content as beizhuContent
+        ,banji.index_name as banjiName
+        ,kecheng.index_name as kechengName
+        ,laoshi.laoshi_name as laoshiName
+
+        FROM zuoye  a
+        left JOIN banji_kecheng_laoshi banjiKechengLaoshi ON a.banji_kecheng_laoshi_id = banjiKechengLaoshi.id
+        left JOIN dictionary  banji   ON banji.id = banjiKechengLaoshi.banji_id
+        left JOIN dictionary  kecheng ON kecheng.id = banjiKechengLaoshi.kecheng_id
+        left JOIN laoshi      laoshi  ON laoshi.id = banjiKechengLaoshi.laoshi_id
+
+        <where>
+            <if test="params.banjiKechengLaoshiId != null">
+                and a.banji_kecheng_laoshi_id = #{params.banjiKechengLaoshiId}
+            </if>
+            <if test=" params.zuoyeName != '' and params.zuoyeName != null and params.zuoyeName != 'null' ">
+                and a.zuoye_name like CONCAT('%',#{params.zuoyeName},'%')
+            </if>
+            <if test=" params.zuoyeContent != '' and params.zuoyeContent != null and params.zuoyeContent != 'null' ">
+                and a.zuoye_content like CONCAT('%',#{params.zuoyeContent},'%')
+            </if>
+            <if test=" params.insertTimeStart != '' and params.insertTimeStart != null ">
+                <![CDATA[  and DATE_FORMAT(a.insert_time, '%Y-%m-%d %H:%T:%s') >=
+                DATE_FORMAT(#{params.insertTimeStart}, '%Y-%m-%d %H:%T:%s')   ]]>
+            </if>
+            <if test=" params.insertTimeEnd != '' and params.insertTimeEnd != null ">
+                <![CDATA[  and DATE_FORMAT(a.insert_time, '%Y-%m-%d %H:%T:%s') <=
+                DATE_FORMAT(#{params.insertTimeEnd} , '%Y-%m-%d %H:%T:%s')    ]]>
+            </if>
+            <if test=" params.endTimeStart != '' and params.endTimeStart != null ">
+                <![CDATA[  and DATE_FORMAT(a.end_time, '%Y-%m-%d %H:%T:%s') >=
+                DATE_FORMAT(#{params.endTimeStart}, '%Y-%m-%d %H:%T:%s')   ]]>
+            </if>
+            <if test=" params.endTimeEnd != '' and params.endTimeEnd != null ">
+                <![CDATA[  and DATE_FORMAT(a.end_time, '%Y-%m-%d %H:%T:%s') <=
+                DATE_FORMAT(#{params.endTimeEnd} , '%Y-%m-%d %H:%T:%s')    ]]>
+            </if>
+
+            <if test="params.banjiId != null">
+                and banjiKechengLaoshi.banji_id = #{params.banjiId}
+            </if>
+            <if test="params.kechengId != null">
+                and banjiKechengLaoshi.kecheng_id = #{params.kechengId}
+            </if>
+            <if test="params.laoshiId != null">
+                and banjiKechengLaoshi.laoshi_id = #{params.laoshiId}
+            </if>
+
+            <if test=" params.banjiName != '' and params.banjiName != null and params.banjiName != 'null' ">
+                and banji.index_name like CONCAT('%',#{params.banjiName},'%')
+            </if>
+            <if test=" params.kechengName != '' and params.kechengName != null and params.kechengName != 'null' ">
+                and kecheng.index_name like CONCAT('%',#{params.kechengName},'%')
+            </if>
+            <if test=" params.laoshiName != '' and params.laoshiName != null and params.laoshiName != 'null' ">
+                and laoshi.laoshi_name like CONCAT('%',#{params.laoshiName},'%')
+            </if>
+        </where>
+        order by a.id desc
+    </select>
+
+</mapper>

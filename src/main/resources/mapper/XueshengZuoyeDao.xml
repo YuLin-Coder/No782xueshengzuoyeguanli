@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.XueshengZuoyeDao">
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        a.id as id
+        ,a.yonghu_id as yonghuId
+        ,a.zuoye_id as zuoyeId
+        ,a.xuesheng_zuoye_file as xueshengZuoyeFile
+        ,a.xuesheng_zuoye_time as xueshengZuoyeTime
+        ,a.laoshi_id as laoshiId
+        ,a.laoshi_zuoye_file as laoshiZuoyeFile
+        ,a.laoshi_zuoye_content as laoshiZuoyeContent
+        ,a.laoshi_zuoye_time as laoshiZuoyeTime
+        ,a.zuoye_number as zuoyeNumber
+        ,a.create_time as createTime
+    </sql>
+    <select id="selectListView" parameterType="map" resultType="com.entity.view.XueshengZuoyeView" >
+        SELECT
+        <include refid="Base_Column_List" />
+
+--         级联表的字段
+        ,laoshi.username as username
+        ,laoshi.password as password
+        ,laoshi.laoshi_name as laoshiName
+        ,laoshi.sex_types as sexTypes
+        ,laoshi.laoshi_id_number as laoshiIdNumber
+        ,laoshi.laoshi_phone as laoshiPhone
+        ,laoshi.laoshi_photo as laoshiPhoto
+        ,laoshi.laoshi_nation as laoshiNation
+        ,laoshi.politics_types as politicsTypes
+        ,laoshi.laoshi_address as laoshiAddress
+        ,yonghu.username as username
+        ,yonghu.password as password
+        ,yonghu.name as name
+        ,yonghu.sex_types as sexTypes
+        ,yonghu.id_number as idNumber
+        ,yonghu.phone as phone
+        ,yonghu.yonghu_photo as yonghuPhoto
+        ,yonghu.nation as nation
+        ,yonghu.politics_types as politicsTypes
+        ,yonghu.address as address
+        ,yonghu.banji_types as banjiTypes
+        ,zuoye.banji_kecheng_laoshi_id as banjiKechengLaoshiId
+        ,zuoye.zuoye_name as zuoyeName
+        ,zuoye.zuoye_file as zuoyeFile
+        ,zuoye.zuoye_content as zuoyeContent
+        ,zuoye.insert_time as insertTime
+        ,zuoye.end_time as endTime
+        ,banji.index_name   as banjiName
+        ,kecheng.index_name as kechengName
+
+        FROM xuesheng_zuoye  a
+        left JOIN laoshi laoshi ON a.laoshi_id = laoshi.id
+        left JOIN yonghu yonghu ON a.yonghu_id = yonghu.id
+        left JOIN zuoye zuoye ON a.zuoye_id = zuoye.id
+        left JOIN banji_kecheng_laoshi banjiKechengLaoshi    ON zuoye.banji_kecheng_laoshi_id    = banjiKechengLaoshi.id
+        left JOIN dictionary banji    ON banjiKechengLaoshi.banji_id    = banji.id
+        left JOIN dictionary kecheng  ON banjiKechengLaoshi.kecheng_id  = kecheng.id
+
+
+        <where>
+            <if test="params.yonghuId != null">
+                and a.yonghu_id = #{params.yonghuId}
+            </if>
+            <if test="params.zuoyeId != null">
+                and a.zuoye_id = #{params.zuoyeId}
+            </if>
+            <if test=" params.xueshengZuoyeTimeStart != '' and params.xueshengZuoyeTimeStart != null ">
+                <![CDATA[  and DATE_FORMAT(a.xuesheng_zuoye_time, '%Y-%m-%d %H:%T:%s') >=
+                DATE_FORMAT(#{params.xueshengZuoyeTimeStart}, '%Y-%m-%d %H:%T:%s')   ]]>
+            </if>
+            <if test=" params.xueshengZuoyeTimeEnd != '' and params.xueshengZuoyeTimeEnd != null ">
+                <![CDATA[  and DATE_FORMAT(a.xuesheng_zuoye_time, '%Y-%m-%d %H:%T:%s') <=
+                DATE_FORMAT(#{params.xueshengZuoyeTimeEnd} , '%Y-%m-%d %H:%T:%s')    ]]>
+            </if>
+            <if test="params.laoshiId != null">
+                and a.laoshi_id = #{params.laoshiId}
+            </if>
+            <if test=" params.laoshiZuoyeContent != '' and params.laoshiZuoyeContent != null and params.laoshiZuoyeContent != 'null' ">
+                and a.laoshi_zuoye_content like CONCAT('%',#{params.laoshiZuoyeContent},'%')
+            </if>
+            <if test=" params.laoshiZuoyeTimeStart != '' and params.laoshiZuoyeTimeStart != null ">
+                <![CDATA[  and DATE_FORMAT(a.laoshi_zuoye_time, '%Y-%m-%d %H:%T:%s') >=
+                DATE_FORMAT(#{params.laoshiZuoyeTimeStart}, '%Y-%m-%d %H:%T:%s')   ]]>
+            </if>
+            <if test=" params.laoshiZuoyeTimeEnd != '' and params.laoshiZuoyeTimeEnd != null ">
+                <![CDATA[  and DATE_FORMAT(a.laoshi_zuoye_time, '%Y-%m-%d %H:%T:%s') <=
+                DATE_FORMAT(#{params.laoshiZuoyeTimeEnd} , '%Y-%m-%d %H:%T:%s')    ]]>
+            </if>
+            <if test="params.zuoyeNumberStart != null">
+                <![CDATA[  and a.zuoye_number >= #{params.zuoyeNumberStart}   ]]>
+            </if>
+            <if test="params.zuoyeNumberEnd != null">
+                <![CDATA[  and a.zuoye_number <= #{params.zuoyeNumberEnd}   ]]>
+            </if>
+
+            <if test=" params.username != '' and params.username != null and params.username != 'null' ">
+                and laoshi.username like CONCAT('%',#{params.username},'%')
+            </if>
+            <if test=" params.password != '' and params.password != null and params.password != 'null' ">
+                and laoshi.password like CONCAT('%',#{params.password},'%')
+            </if>
+            <if test=" params.laoshiName != '' and params.laoshiName != null and params.laoshiName != 'null' ">
+                and laoshi.laoshi_name like CONCAT('%',#{params.laoshiName},'%')
+            </if>
+            <if test="params.sexTypes != null">
+                and laoshi.sex_types = #{params.sexTypes}
+            </if>
+
+            <if test=" params.laoshiIdNumber != '' and params.laoshiIdNumber != null and params.laoshiIdNumber != 'null' ">
+                and laoshi.laoshi_id_number like CONCAT('%',#{params.laoshiIdNumber},'%')
+            </if>
+            <if test=" params.laoshiPhone != '' and params.laoshiPhone != null and params.laoshiPhone != 'null' ">
+                and laoshi.laoshi_phone like CONCAT('%',#{params.laoshiPhone},'%')
+            </if>
+            <if test=" params.laoshiNation != '' and params.laoshiNation != null and params.laoshiNation != 'null' ">
+                and laoshi.laoshi_nation like CONCAT('%',#{params.laoshiNation},'%')
+            </if>
+            <if test="params.politicsTypes != null">
+                and laoshi.politics_types = #{params.politicsTypes}
+            </if>
+
+            <if test=" params.laoshiAddress != '' and params.laoshiAddress != null and params.laoshiAddress != 'null' ">
+                and laoshi.laoshi_address like CONCAT('%',#{params.laoshiAddress},'%')
+            </if>
+            <if test=" params.username != '' and params.username != null and params.username != 'null' ">
+                and yonghu.username like CONCAT('%',#{params.username},'%')
+            </if>
+            <if test=" params.password != '' and params.password != null and params.password != 'null' ">
+                and yonghu.password like CONCAT('%',#{params.password},'%')
+            </if>
+            <if test=" params.name != '' and params.name != null and params.name != 'null' ">
+                and yonghu.name like CONCAT('%',#{params.name},'%')
+            </if>
+            <if test="params.sexTypes != null">
+                and yonghu.sex_types = #{params.sexTypes}
+            </if>
+
+            <if test=" params.idNumber != '' and params.idNumber != null and params.idNumber != 'null' ">
+                and yonghu.id_number like CONCAT('%',#{params.idNumber},'%')
+            </if>
+            <if test=" params.phone != '' and params.phone != null and params.phone != 'null' ">
+                and yonghu.phone like CONCAT('%',#{params.phone},'%')
+            </if>
+            <if test=" params.nation != '' and params.nation != null and params.nation != 'null' ">
+                and yonghu.nation like CONCAT('%',#{params.nation},'%')
+            </if>
+            <if test="params.politicsTypes != null">
+                and yonghu.politics_types = #{params.politicsTypes}
+            </if>
+
+            <if test=" params.address != '' and params.address != null and params.address != 'null' ">
+                and yonghu.address like CONCAT('%',#{params.address},'%')
+            </if>
+            <if test="params.banjiTypes != null">
+                and yonghu.banji_types = #{params.banjiTypes}
+            </if>
+
+            <if test="params.banjiKechengLaoshiId != null">
+                and zuoye.banji_kecheng_laoshi_id = #{params.banjiKechengLaoshiId}
+            </if>
+            <if test=" params.zuoyeName != '' and params.zuoyeName != null and params.zuoyeName != 'null' ">
+                and zuoye.zuoye_name like CONCAT('%',#{params.zuoyeName},'%')
+            </if>
+            <if test=" params.zuoyeContent != '' and params.zuoyeContent != null and params.zuoyeContent != 'null' ">
+                and zuoye.zuoye_content like CONCAT('%',#{params.zuoyeContent},'%')
+            </if>
+            <if test=" params.insertTimeStart != '' and params.insertTimeStart != null ">
+                <![CDATA[  and DATE_FORMAT(zuoye.insert_time, '%Y-%m-%d %H:%T:%s') >=
+                DATE_FORMAT(#{params.insertTimeStart}, '%Y-%m-%d %H:%T:%s')   ]]>
+            </if>
+            <if test=" params.insertTimeEnd != '' and params.insertTimeEnd != null ">
+                <![CDATA[  and DATE_FORMAT(zuoye.insert_time, '%Y-%m-%d %H:%T:%s') <=
+                DATE_FORMAT(#{params.insertTimeEnd} , '%Y-%m-%d %H:%T:%s')    ]]>
+            </if>
+            <if test=" params.endTimeStart != '' and params.endTimeStart != null ">
+                <![CDATA[  and DATE_FORMAT(zuoye.end_time, '%Y-%m-%d %H:%T:%s') >=
+                DATE_FORMAT(#{params.endTimeStart}, '%Y-%m-%d %H:%T:%s')   ]]>
+            </if>
+            <if test=" params.endTimeEnd != '' and params.endTimeEnd != null ">
+                <![CDATA[  and DATE_FORMAT(zuoye.end_time, '%Y-%m-%d %H:%T:%s') <=
+                DATE_FORMAT(#{params.endTimeEnd} , '%Y-%m-%d %H:%T:%s')    ]]>
+            </if>
+
+
+
+
+            <if test=" params.banjiName != '' and params.banjiName != null and params.banjiName != 'null' ">
+                and banji.index_name like CONCAT('%',#{params.banjiName},'%')
+            </if>
+            <if test=" params.kechengName != '' and params.kechengName != null and params.kechengName != 'null' ">
+                and kecheng.index_name like CONCAT('%',#{params.kechengName},'%')
+            </if>
+        </where>
+        order by a.id desc
+    </select>
+
+</mapper>
